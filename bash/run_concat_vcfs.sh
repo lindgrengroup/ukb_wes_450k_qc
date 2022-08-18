@@ -31,7 +31,6 @@ run_job() {
 		dx run swiss-army-knife \
 			--name "concat_c21" \
 			-iin="${script_dnax}" \
-			
 			-icmd="bash ${script} ${out}" \
 			--instance-type="${instance_type}" \
 			--destination="${destination}" \
