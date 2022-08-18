@@ -12,12 +12,12 @@ upload_file() {
 	file_ct=$( dx ls -l --obj "${_script_dnax}" 2> /dev/null | wc -l )
 	if [ ${file_ct} -ge 1 ]; then
 		dx mv "${_script_dnax}" "${_script_dnax}-tmp" \
-		&& dx upload "${_script_local}" --path "${_script_dnax}" --brief  \
+		&& dx upload "${_script_local}" --path "${_script_dnax}" --brief --parents \
 		&& dx rm --force "${_script_dnax}-tmp" \
 		|| raise_error "Uploading ${_script_local} failed!"
 	else
-		dx upload "${_script_local}" --path "${_script_dnax}" --brief \
-		|| raise_error "Uploading ${_script_local} failed!"
+		dx upload "${_script_local}" --path "${_script_dnax}" --brief --parents \
+		|| raise_error "Uploading new script ${_script_local} failed!"
 	fi
 }
 
