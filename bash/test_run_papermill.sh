@@ -15,16 +15,24 @@ instance_type="mem1_ssd1_v2_x36" # Large
 instance_count="32" # Large
 # instance_count="4" # Medium
 
-duration="240"
+# Duration in minutes
+duration="1000" # arbitrarily large, cost limit will automatically terminate if needed
 
-chrom=20
+# Cost limit (in GBP)
+cost_limit="100"
+
+chrom=21
 
 # ipynb="test_papermill_filter.ipynb"
 # ipynb="test_papermill_simple.ipynb"
 # ipynb="sample_qc_raw_vcf.ipynb"
 # ipynb="papermill_filter_sample_qc.ipynb"
-ipynb_prefix="test-01_calc_call_rate_and_coverage"
+# ipynb_prefix="01_calc_call_rate_and_coverage"
+# ipynb_prefix="test-01_calc_call_rate_and_coverage-ALTERNATE"
+# ipynb_prefix="test-01_calc_call_rate_and_coverage-ALTv2"
 # ipynb_prefix="test-02_hail_sample_qc"
+ipynb_prefix="test-04_final_filter"
+
 ipynb="${ipynb_prefix}.ipynb"
 
 ipynb_w_chrom="${ipynb_prefix}_c${chrom}.ipynb"
@@ -63,7 +71,8 @@ dx run \
   --yes \
   -iduration="${duration}" \
   -ifeature="HAIL-0.2.78" \
-  --brief
+  --brief \
+  --cost-limit="${cost_limit}"
 
 
 
