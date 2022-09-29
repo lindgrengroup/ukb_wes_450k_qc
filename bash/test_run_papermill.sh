@@ -7,21 +7,27 @@ set -eu
 WD="/Users/nbaya/gms/lindgren/ukb_wes/ukb_wes_450k_qc"
 
 ## Job parameters
-# instance_type="mem1_ssd1_v2_x2" # Small
-# instance_type="mem1_ssd1_v2_x8" # DEFAULT
-instance_type="mem1_ssd1_v2_x36" # Large
 # instance_type="mem1_ssd1_v2_x72" # Very large
+instance_type="mem1_ssd1_v2_x36" # Large
+# instance_type="mem1_ssd1_v2_x16" # DEFAULT
+# instance_type="mem1_ssd1_v2_x8" # DEFAULT
+# instance_type="mem1_ssd1_v2_x2" # Small
 
+
+# instance_count="64" # Very large
 instance_count="32" # Large
-# instance_count="4" # Medium
+# instance_count="8" # Medium
+# instance_count="4" # Small-mid
+
 
 # Duration in minutes
 duration="1000" # arbitrarily large, cost limit will automatically terminate if needed
 
-# Cost limit (in GBP)
-cost_limit="100"
 
-chrom=21
+# Cost limit (in GBP)
+cost_limit="50"
+
+chrom=$1
 
 # ipynb="test_papermill_filter.ipynb"
 # ipynb="test_papermill_simple.ipynb"
@@ -29,9 +35,15 @@ chrom=21
 # ipynb="papermill_filter_sample_qc.ipynb"
 # ipynb_prefix="01_calc_call_rate_and_coverage"
 # ipynb_prefix="test-01_calc_call_rate_and_coverage-ALTERNATE"
-# ipynb_prefix="test-01_calc_call_rate_and_coverage-ALTv2"
+# ipynb_prefix="test-01_calc_call_rate_and_coverage"
 # ipynb_prefix="test-02_hail_sample_qc"
-ipynb_prefix="test-04_final_filter"
+# ipynb_prefix="test-04_final_filter_write_to_mt"
+# ipynb_prefix="test-04_final_filter_write_pass_variants"
+ipynb_prefix="test-05_export_to_vcf"
+# ipynb_prefix="test-05_final_sample_stats"
+# ipynb_prefix="test-05_final_variant_stats"
+# ipynb_prefix="test-07_export_to_plink"
+
 
 ipynb="${ipynb_prefix}.ipynb"
 
@@ -73,6 +85,3 @@ dx run \
   -ifeature="HAIL-0.2.78" \
   --brief \
   --cost-limit="${cost_limit}"
-
-
-
