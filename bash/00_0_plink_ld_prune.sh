@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# Based on https://saigegit.github.io/SAIGE-doc/docs/UK_Biobank_WES_analysis.html
+#
 
 readonly chrom=$1
 readonly bfile="/mnt/project/Bulk/Genotype Results/Genotype calls/ukb22418_c${chrom}_b0_v2"
