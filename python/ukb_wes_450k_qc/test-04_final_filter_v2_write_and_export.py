@@ -7,6 +7,7 @@ import json
 import os
 import re
 import glob
+import argparse
 
 my_database = dxpy.find_one_data_object(
     name="my_database", 
@@ -54,7 +55,10 @@ def get_gnomad_vcf_path(chrom, blocks):
     if blocks != '*':
         blocks = '{'+','.join(map(str, blocks))+'}'
         
-    return f'{vcf_dir}/ukb24068_c{chrom}_b{blocks}_v1.vcf.gz'
+    path = f'{vcf_dir}/ukb24068_c{chrom}_b{blocks}_v1.vcf.gz'
+    print(path)
+
+    return path
 
 
 def get_partitioned_chrom(chrom_w_suffix):
@@ -85,7 +89,7 @@ def import_single_chrom_vcf(chrom, blocks = '*'):
         #install_dxda()
         #download_files("/Bulk/Exome sequences_Alternative exome processing/Exome variant call files (gnomAD) (VCFs)", chrom, blocks)
 
-        vcf_path = "/home/dnanexus" + vcf_path
+        vcf_path = "/mnt/project" + vcf_path
     
     return hl.import_vcf(
         ["file://" + file for file in glob.glob(vcf_path)], 
@@ -165,17 +169,6 @@ def get_pass_mad_threshold_expr(mt, n_mads='4', classification='strict'):
     )
     return mad_ht[mt.s]['pass']
 
-def final_filter(mt):
-    pass_mad_threshold_expr = get_pass_mad_threshold_expr(mt, n_mads='4', classification='strict')
-    mt = mt.filter_cols(pass_mad_threshold_expr)
-
-    mt = site_filter(mt)
-
-    # NOTE: Final variant filter MUST come after site filter in order to remove variants where no individuals have high quality genotypes
-    mt = final_variant_filter(mt)
-    
-    return mt
-
 def get_final_filter_mt_path(chrom):
     return f'{database_dir}/04_final_filter_v2_write_to_mt/ukb_wes_450k.qced.chr{chrom}.mt'
 
@@ -201,25 +194,24 @@ def main(chrom):
     mt_qced = final_filter(mt_raw)
 
     mt_qced.write(get_final_filter_mt_path(chrom))
-    
-    LOCAL_WD = '/home/dnanexus'
-    local_path = f'{LOCAL_WD}/ukb_wes_450k.qced.chr{chrom}'
-    
-    hl.export_plink(
-        dataset=mt_qced,
-        output = f'file://{local_path}'
+        
+    mt = mt.annotate_cols(gq = hl.agg.stats(mt.GQ), dp = hl.agg.stats(mt.DP))
+    mt = hl.sample_qc(mt, name='sample_qc')
+
+    INITIAL_SAMPLE_QC_FILE = f'03_chr{chrom}_initial_sample_qc.tsv.bgz'
+    mt.cols().select('sample_qc', 'gq', 'dp').flatten().export(INITIAL_SAMPLE_QC_FILE)
+
+    os.system('hdfs dfs -get ./*.tsv.bgz .')
+
+    export_file(
+        path=INITIAL_SAMPLE_QC_FILE, 
+        out_folder='/Barney/qc/03_initial_sample/'
     )
-
-
-    for suffix in ['bed','bim','fam']:
-        export_file(
-            path=f'{local_path}.{suffix}', 
-            out_folder='/Barney/wes'
-        )
 
 if __name__=='__main__':
 
-    parameters = json.loads(os.getenv("parameters"))
-    chrom = parameters["chrom"]
+    parser = argparse.ArgumentParser(description="Process some integers.")
+    parser.add_argument('--chrom', required=True, help='Chromosome number')
 
-    main(chrom=chrom)
+    args = parser.parse_args()
+    main(chrom=args.chrom)
