@@ -4,18 +4,19 @@
 # "u" throws error if variables are undefined
 set -eu 
 
-WD="/Users/nbaya/gms/lindgren/ukb_wes/ukb_wes_450k_qc"
+WD="/Users/barneyh/brava/ukb_wes_450k_qc"
 
 ## Job parameters
 # instance_type="mem1_ssd1_v2_x72" # Very large
-instance_type="mem1_ssd1_v2_x36" # Large
-# instance_type="mem1_ssd1_v2_x16" # DEFAULT
+# instance_type="mem3_ssd1_v2_x32" # Large
+instance_type="mem3_ssd1_v2_x16" # DEFAULT
 # instance_type="mem1_ssd1_v2_x8" # DEFAULT
 # instance_type="mem1_ssd1_v2_x2" # Small
 
 
 # instance_count="64" # Very large
-instance_count="32" # Large
+instance_count="32"
+# instance_count="16" # Large
 # instance_count="8" # Medium
 # instance_count="4" # Small-mid
 
@@ -25,7 +26,7 @@ duration="1000" # arbitrarily large, cost limit will automatically terminate if 
 
 
 # Cost limit (in GBP)
-cost_limit="50"
+cost_limit="500"
 
 chrom=$1
 
@@ -39,13 +40,13 @@ chrom=$1
 # ipynb_prefix="test-02_hail_sample_qc"
 # ipynb_prefix="test-04_final_filter_write_to_mt"
 # ipynb_prefix="test-04_final_filter_write_pass_variants"
-ipynb_prefix="test-05_export_to_vcf"
+ipynb_prefix="test-04_final_filter_v2_write_and_export"
 # ipynb_prefix="test-05_final_sample_stats"
 # ipynb_prefix="test-05_final_variant_stats"
 # ipynb_prefix="test-07_export_to_plink"
 
 
-ipynb="${ipynb_prefix}.ipynb"
+ipynb="${ipynb_prefix}.py"
 
 ipynb_w_chrom="${ipynb_prefix}_c${chrom}.ipynb"
 out_ipynb="timed-${ipynb_w_chrom}"
@@ -73,15 +74,13 @@ name="${ipynb_prefix}_c${chrom}-${instance_count}x"
 
 dx run \
   dxjupyterlab_spark_cluster \
-  --instance-type="${instance_type}" \
-  --instance-count="${instance_count}" \
-  -iin="${ipynb_dnax}" \
-  -iin="${script_dnax}" \
-  -icmd="bash ${script} ${ipynb} ${out_ipynb} ${out_ipynb_dir_dnax} ${chrom}" \
-  --name="${name}" \
-  --priority="low" \
-  --yes \
-  -iduration="${duration}" \
-  -ifeature="HAIL-0.2.78" \
-  --brief \
-  --cost-limit="${cost_limit}"
+    --instance-type="${instance_type}" \
+    --instance-count="${instance_count}" \
+    -icmd="python3 /mnt/project${ipynb_dnax} --chrom ${chrom}" \
+    --name="${name}" \
+    --priority="high" \
+    --yes \
+    -iduration="${duration}" \
+    -ifeature="HAIL" \
+    --brief \
+    --cost-limit="${cost_limit}"

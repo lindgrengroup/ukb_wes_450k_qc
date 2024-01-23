@@ -193,13 +193,13 @@ def main(chrom):
     mt_raw = import_single_chrom_vcf(chrom=chrom)
     mt_qced = final_filter(mt_raw)
 
-    mt_qced.write(get_final_filter_mt_path(chrom))
-        
-    mt = mt.annotate_cols(gq = hl.agg.stats(mt.GQ), dp = hl.agg.stats(mt.DP))
-    mt = hl.sample_qc(mt, name='sample_qc')
+    mt_qced.write(get_final_filter_mt_path(chrom), overwrite=True)
+
+    mt_qced = mt_qced.annotate_cols(gq = hl.agg.stats(mt_qced.GQ), dp = hl.agg.stats(mt_qced.DP))
+    mt_qced = hl.sample_qc(mt_qced, name='sample_qc')
 
     INITIAL_SAMPLE_QC_FILE = f'03_chr{chrom}_initial_sample_qc.tsv.bgz'
-    mt.cols().select('sample_qc', 'gq', 'dp').flatten().export(INITIAL_SAMPLE_QC_FILE)
+    mt_qced.cols().select('sample_qc', 'gq', 'dp').flatten().export(INITIAL_SAMPLE_QC_FILE)
 
     os.system('hdfs dfs -get ./*.tsv.bgz .')
 
